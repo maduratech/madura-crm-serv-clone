@@ -95,6 +95,8 @@ const setCache = (cache, key, value, ttlMs) => {
 const allowedOrigins = [
   "https://crm.maduratravel.com",
   "https://madura-crm-25.vercel.app",
+  "https://maduracrmclone.vercel.app",
+  "https://maduracrmclone.vercel.app/",
   "https://crm-madura.vercel.app",
   "https://crm-madura.vercel.app/",
   "https://maduratravel.com",
