@@ -112,24 +112,38 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
+    // Normalize origin to avoid mismatches like trailing "/"
+    const normalizedOrigin = origin ? origin.replace(/\/$/, "") : origin;
     // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!normalizedOrigin) {
       callback(null, true);
-    } else if (origin && origin.includes("maduratravel.com")) {
+    } else if (
+      allowedOrigins.map((o) => o.replace(/\/$/, "")).includes(normalizedOrigin)
+    ) {
+      callback(null, true);
+    } else if (
+      normalizedOrigin &&
+      normalizedOrigin.includes("maduratravel.com")
+    ) {
       // Allow all maduratravel.com subdomains
       callback(null, true);
-    } else if (origin && origin.includes("maduraglobal.com")) {
+    } else if (
+      normalizedOrigin &&
+      normalizedOrigin.includes("maduraglobal.com")
+    ) {
       // Allow maduraglobal.com (website lead form, public site)
       callback(null, true);
     } else if (
-      origin &&
-      (origin.includes("crm-madura.vercel.app") ||
-        origin.includes("madura-crm-25.vercel.app"))
+      normalizedOrigin &&
+      (normalizedOrigin.includes("crm-madura.vercel.app") ||
+        normalizedOrigin.includes("madura-crm-25.vercel.app") ||
+        normalizedOrigin.includes("maduracrmclone.vercel.app"))
     ) {
       // Allow Vercel deployment domains
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      // Do not throw; throwing can cause preflight to fail with 500.
+      callback(null, false);
     }
   },
   credentials: true,
