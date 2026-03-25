@@ -36,14 +36,20 @@ const supabase = createClient(
 // -------------------------
 // WHATSAPP CONFIG
 // -------------------------
-// Trim to avoid mismatches due to trailing spaces/newlines in .env values.
-const VERIFY_TOKEN = (process.env.VERIFY_TOKEN || "").trim();
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
+const cleanEnv = (value) => {
+  const s = String(value ?? "").trim();
+  // dotenv usually strips quotes, but in case your .env keeps them we remove them here.
+  return s.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
+};
+
+// Trim and normalize to avoid mismatches due to quotes/newlines in .env values.
+const VERIFY_TOKEN = cleanEnv(process.env.VERIFY_TOKEN);
+const WHATSAPP_TOKEN = cleanEnv(process.env.WHATSAPP_TOKEN);
+const PHONE_NUMBER_ID = cleanEnv(process.env.PHONE_NUMBER_ID);
 
 // Australia WhatsApp config
-const WHATSAPP_TOKEN_AU = process.env.WHATSAPP_TOKEN_AU;
-const PHONE_NUMBER_ID_AU = process.env.WHATSAPP_PHONE_NUMBER_ID_AU;
+const WHATSAPP_TOKEN_AU = cleanEnv(process.env.WHATSAPP_TOKEN_AU);
+const PHONE_NUMBER_ID_AU = cleanEnv(process.env.WHATSAPP_PHONE_NUMBER_ID_AU);
 
 const GRAPH_API_BASE = `https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID}/messages`;
 const GRAPH_API_BASE_AU = PHONE_NUMBER_ID_AU
@@ -1835,6 +1841,11 @@ async function handleStructuredTextMessage(from, user, messageText) {
 // -------------------------
 app.post(["/webhook", "/webhook/"], async (req, res) => {
   res.sendStatus(200); // Respond immediately
+  console.log("[BOT] 📥 Webhook POST received", {
+    object: req.body?.object,
+    hasEntry: Array.isArray(req.body?.entry),
+    entryCount: Array.isArray(req.body?.entry) ? req.body.entry.length : 0,
+  });
 
   try {
     const entry = req.body.entry?.[0];
