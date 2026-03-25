@@ -138,6 +138,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+// Ensure preflight requests get a successful response.
+// Without this, Express may fall through to 404 for OPTIONS, causing the browser to block requests.
+app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "50mb" })); // For JSON payloads (increased for file metadata)
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // For form-data payloads from Elementor
 
