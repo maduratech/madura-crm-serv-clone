@@ -50,7 +50,7 @@ const GRAPH_API_BASE_AU = PHONE_NUMBER_ID_AU
   ? `https://graph.facebook.com/v20.0/${PHONE_NUMBER_ID_AU}/messages`
   : null;
 
-const MADURA_API_URL = "https://api.maduratravel.com/api/lead/whatsapp";
+const MADURA_API_URL = "https://api1.maduratravel.com/api/lead/whatsapp";
 
 // -------------------------
 // BRANCH DETECTION HELPER

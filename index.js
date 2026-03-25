@@ -115,7 +115,9 @@ const isAllowedCorsOrigin = (origin) => {
   const normalizedOrigin = normalizeOrigin(origin);
   if (!normalizedOrigin) return true; // allow non-browser requests
 
-  if (allowedOrigins.map((o) => normalizeOrigin(o)).includes(normalizedOrigin)) {
+  if (
+    allowedOrigins.map((o) => normalizeOrigin(o)).includes(normalizedOrigin)
+  ) {
     return true;
   }
 
@@ -156,11 +158,11 @@ app.options("*", (req, res) => {
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, authorization"
+    "Content-Type, Authorization, authorization",
   );
   res.setHeader(
     "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
+    "GET, POST, PUT, DELETE, OPTIONS",
   );
   return res.sendStatus(204);
 });
@@ -1558,7 +1560,7 @@ async function sendStaffAssignmentNotification(
     message = `*New Task Assigned!* 🛂\n\nYou've been assigned the *${specificService}* service for Lead ${leadNumber}${destinationText}.\n\nPlease coordinate with the primary agent, *${primaryAssigneeName}*, to process this request.`;
   }
 
-  const initiateCallUrl = `https://api.maduratravel.com/api/initiate-call?leadId=${lead.id}&staffId=${assignee.id}&phone=${customerPhoneSanitized}`;
+  const initiateCallUrl = `https://api1.maduratravel.com/api/initiate-call?leadId=${lead.id}&staffId=${assignee.id}&phone=${customerPhoneSanitized}`;
 
   // Use normalizePhone function for better phone number handling
   let sanitizedAssigneePhone = normalizePhone(assignee.phone, "IN");
