@@ -110,51 +110,60 @@ const allowedOrigins = [
   "http://localhost:5173",
 ];
 
+const normalizeOrigin = (o) => (o ? o.replace(/\/$/, "") : o);
+const isAllowedCorsOrigin = (origin) => {
+  const normalizedOrigin = normalizeOrigin(origin);
+  if (!normalizedOrigin) return true; // allow non-browser requests
+
+  if (allowedOrigins.map((o) => normalizeOrigin(o)).includes(normalizedOrigin)) {
+    return true;
+  }
+
+  if (normalizedOrigin.includes("maduratravel.com")) return true;
+  if (normalizedOrigin.includes("maduraglobal.com")) return true;
+
+  if (
+    normalizedOrigin.includes("crm-madura.vercel.app") ||
+    normalizedOrigin.includes("madura-crm-25.vercel.app") ||
+    normalizedOrigin.includes("maduracrmclone.vercel.app")
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
 const corsOptions = {
   origin: function (origin, callback) {
     // Normalize origin to avoid mismatches like trailing "/"
-    const normalizedOrigin = origin ? origin.replace(/\/$/, "") : origin;
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!normalizedOrigin) {
-      callback(null, true);
-    } else if (
-      allowedOrigins.map((o) => o.replace(/\/$/, "")).includes(normalizedOrigin)
-    ) {
-      callback(null, true);
-    } else if (
-      normalizedOrigin &&
-      normalizedOrigin.includes("maduratravel.com")
-    ) {
-      // Allow all maduratravel.com subdomains
-      callback(null, true);
-    } else if (
-      normalizedOrigin &&
-      normalizedOrigin.includes("maduraglobal.com")
-    ) {
-      // Allow maduraglobal.com (website lead form, public site)
-      callback(null, true);
-    } else if (
-      normalizedOrigin &&
-      (normalizedOrigin.includes("crm-madura.vercel.app") ||
-        normalizedOrigin.includes("madura-crm-25.vercel.app") ||
-        normalizedOrigin.includes("maduracrmclone.vercel.app"))
-    ) {
-      // Allow Vercel deployment domains
-      callback(null, true);
-    } else {
-      // Do not throw; throwing can cause preflight to fail with 500.
-      callback(null, false);
-    }
+    callback(null, isAllowedCorsOrigin(origin));
   },
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "authorization"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 };
 
 app.use(cors(corsOptions));
-// Ensure preflight requests get a successful response.
-// CORS middleware only sets headers; we must explicitly return a 2xx for OPTIONS.
-app.options("*", cors(corsOptions), (req, res) => res.sendStatus(204));
+// Ensure preflight requests succeed.
+// We intentionally bypass the `cors(...)` middleware here because it can throw
+// "Not allowed by CORS" and return 500, blocking the browser preflight.
+app.options("*", (req, res) => {
+  const origin = req.headers.origin;
+  if (!isAllowedCorsOrigin(origin)) return res.sendStatus(403);
+
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, authorization"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  return res.sendStatus(204);
+});
 app.use(express.json({ limit: "50mb" })); // For JSON payloads (increased for file metadata)
 app.use(express.urlencoded({ extended: true, limit: "50mb" })); // For form-data payloads from Elementor
 

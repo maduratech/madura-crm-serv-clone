@@ -36,7 +36,8 @@ const supabase = createClient(
 // -------------------------
 // WHATSAPP CONFIG
 // -------------------------
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+// Trim to avoid mismatches due to trailing spaces/newlines in .env values.
+const VERIFY_TOKEN = (process.env.VERIFY_TOKEN || "").trim();
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
 
@@ -1380,9 +1381,9 @@ async function askNextQuestion(from, user) {
 // -------------------------
 // WEBHOOK VERIFICATION
 // -------------------------
-app.get("/webhook", (req, res) => {
+function handleWebhookVerification(req, res) {
   const mode = req.query["hub.mode"];
-  const token = req.query["hub.verify_token"];
+  const token = String(req.query["hub.verify_token"] || "").trim();
   const challenge = req.query["hub.challenge"];
 
   console.log("[BOT] 📥 Webhook verification request received");
@@ -1395,7 +1396,10 @@ app.get("/webhook", (req, res) => {
 
   console.log("[BOT] ❌ Webhook verification failed");
   return res.sendStatus(403);
-});
+}
+
+// Support both `/webhook` and `/webhook/` callback URLs.
+app.get(["/webhook", "/webhook/"], handleWebhookVerification);
 
 // -------------------------
 // REFACTORED HANDLERS
