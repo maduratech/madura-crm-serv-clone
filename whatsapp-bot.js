@@ -1833,7 +1833,7 @@ async function handleStructuredTextMessage(from, user, messageText) {
 // -------------------------
 // MAIN WEBHOOK RECEIVER
 // -------------------------
-app.post("/webhook", async (req, res) => {
+app.post(["/webhook", "/webhook/"], async (req, res) => {
   res.sendStatus(200); // Respond immediately
 
   try {
